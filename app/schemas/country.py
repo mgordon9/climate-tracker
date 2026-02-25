@@ -30,3 +30,15 @@ class CountryList(BaseModel):
 class CountryDetail(CountryList):
     population: int | None = None
     climate_data: list[ClimateDataPoint] = []
+
+
+class GlobeCountry(BaseModel):
+    id: int
+    name: str
+    iso_code: str
+    iso3_code: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    latest_temp_change: float | None = None
+
+    model_config = {"from_attributes": True}

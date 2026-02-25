@@ -92,6 +92,14 @@ climate-tracker/
 └── docker-compose.yml
 ```
 
+## Data Sources
+
+| Data | Source |
+|---|---|
+| Temperature change & CO2 emissions | [Our World in Data — CO2 and Greenhouse Gas Emissions dataset](https://github.com/owid/co2-data) |
+| Country boundaries (globe polygons) | [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas) |
+| Country ISO codes (ISO 3166-1) | [i18n-iso-countries](https://github.com/michaelwittig/node-i18n-iso-countries) |
+
 ## Roadmap
 
 See [docs/spec.md](docs/spec.md) for the full phase-by-phase plan.

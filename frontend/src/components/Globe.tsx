@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import ReactGlobe, { GlobeMethods } from 'react-globe.gl'
+import { feature } from 'topojson-client'
+import type { Topology, GeometryCollection } from 'topojson-specification'
+import * as isoCountries from 'i18n-iso-countries'
 import { fetchGlobeData, GlobeCountry } from '../api'
 
 interface GlobeProps {
@@ -8,17 +11,9 @@ interface GlobeProps {
 
 interface GeoFeature {
   type: string
-  properties: {
-    ADMIN: string
-    ISO_A2: string
-    ISO_A3: string
-  }
+  id?: string | number
+  properties: Record<string, string>
   geometry: object
-}
-
-interface GeoJSON {
-  type: string
-  features: GeoFeature[]
 }
 
 function tempToColor(temp: number | null): string {
@@ -29,7 +24,7 @@ function tempToColor(temp: number | null): string {
   const max = 3.0
   const t = Math.max(0, Math.min(1, (temp - min) / (max - min)))
 
-  // Blue (0,0,255) → White (255,255,255) → Red (255,0,0)
+  // Blue → White → Red
   let r: number, g: number, b: number
   if (t < 0.5) {
     const s = t / 0.5
@@ -55,18 +50,24 @@ export default function Globe({ onCountrySelect }: GlobeProps) {
 
   useEffect(() => {
     Promise.all([
-      fetch(
-        'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson',
-      ).then((r) => r.json()) as Promise<GeoJSON>,
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then((r) => r.json())
+        .then((topo: Topology) => {
+          const geojson = feature(
+            topo,
+            topo.objects['countries'] as GeometryCollection,
+          )
+          return geojson.features as GeoFeature[]
+        }),
       fetchGlobeData(),
     ])
-      .then(([geojson, globeData]) => {
+      .then(([features, globeData]) => {
         const lookup = new Map<string, GlobeCountry>()
         for (const c of globeData) {
           if (c.iso3_code) lookup.set(c.iso3_code, c)
         }
         setTempLookup(lookup)
-        setCountries(geojson.features)
+        setCountries(features)
         setLoading(false)
       })
       .catch((err) => {
@@ -75,39 +76,53 @@ export default function Globe({ onCountrySelect }: GlobeProps) {
       })
   }, [])
 
+  const getIso3 = useCallback((feature: GeoFeature): string | undefined => {
+    return isoCountries.numericToAlpha3(String(feature.id)) || undefined
+  }, [])
+
   const getPolygonColor = useCallback(
     (feature: object) => {
-      const f = feature as GeoFeature
-      const iso3 = f.properties.ISO_A3
+      const iso3 = getIso3(feature as GeoFeature)
+      if (!iso3) return 'rgba(120,120,120,0.7)'
       const entry = tempLookup.get(iso3)
       return tempToColor(entry?.latest_temp_change ?? null)
     },
-    [tempLookup],
+    [tempLookup, getIso3],
   )
 
-  const getPolygonLabel = useCallback((feature: object) => {
-    const f = feature as GeoFeature
-    return f.properties.ADMIN
-  }, [])
+  const getPolygonLabel = useCallback(
+    (feature: object) => {
+      const f = feature as GeoFeature
+      const iso3 = getIso3(f)
+      if (!iso3) return ''
+      const entry = tempLookup.get(iso3)
+      return entry?.name ?? ''
+    },
+    [tempLookup, getIso3],
+  )
 
   const handlePolygonClick = useCallback(
     (feature: object) => {
-      const f = feature as GeoFeature
-      const iso3 = f.properties.ISO_A3
+      const iso3 = getIso3(feature as GeoFeature)
+      if (!iso3) return
       const entry = tempLookup.get(iso3)
       if (entry) onCountrySelect(entry.id)
     },
-    [tempLookup, onCountrySelect],
+    [tempLookup, getIso3, onCountrySelect],
   )
 
-  const handlePolygonHover = useCallback((feature: object | null) => {
-    if (!feature) {
-      setHoverName(null)
-      return
-    }
-    const f = feature as GeoFeature
-    setHoverName(f.properties.ADMIN)
-  }, [])
+  const handlePolygonHover = useCallback(
+    (feature: object | null) => {
+      if (!feature) {
+        setHoverName(null)
+        return
+      }
+      const iso3 = getIso3(feature as GeoFeature)
+      const entry = iso3 ? tempLookup.get(iso3) : undefined
+      setHoverName(entry?.name ?? null)
+    },
+    [tempLookup, getIso3],
+  )
 
   return (
     <>

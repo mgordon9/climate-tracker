@@ -19,23 +19,23 @@ interface GeoFeature {
 function tempToColor(temp: number | null): string {
   if (temp === null) return 'rgba(120, 120, 120, 0.7)'
 
-  // Map temp range [-0.5, 3.0] to [0, 1]
-  const min = -0.5
-  const max = 3.0
-  const t = Math.max(0, Math.min(1, (temp - min) / (max - min)))
+  // Log scale over actual data range (0 to ~0.3°C).
+  // log1p avoids log(0); LOG_MAX = log1p(0.3).
+  const LOG_MAX = Math.log1p(0.3)
+  const t = Math.max(0, Math.min(1, Math.log1p(Math.max(0, temp)) / LOG_MAX))
 
-  // Blue → White → Red
+  // White → Orange → Red
   let r: number, g: number, b: number
   if (t < 0.5) {
     const s = t / 0.5
-    r = Math.round(s * 255)
-    g = Math.round(s * 255)
-    b = 255
+    r = 255
+    g = Math.round(255 - s * 90)  // 255 → 165 (orange)
+    b = Math.round(255 - s * 255) // 255 → 0
   } else {
     const s = (t - 0.5) / 0.5
     r = 255
-    g = Math.round((1 - s) * 255)
-    b = Math.round((1 - s) * 255)
+    g = Math.round(165 - s * 165) // 165 → 0 (red)
+    b = 0
   }
 
   return `rgba(${r},${g},${b},0.75)`

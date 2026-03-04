@@ -72,6 +72,19 @@ export async function fetchTimeSeries(
   return res.json()
 }
 
+export interface QASource { title: string; excerpt: string }
+export interface QAResponse { answer: string; sources: QASource[] }
+
+export async function postQuestion(countryId: number, question: string): Promise<QAResponse> {
+  const res = await fetch('/api/qa', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ country_id: countryId, question }),
+  })
+  if (!res.ok) throw new Error(`Q&A request failed: ${res.status}`)
+  return res.json()
+}
+
 export async function fetchCompare(
   ids: number[],
   metric: string,

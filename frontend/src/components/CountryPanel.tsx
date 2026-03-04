@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchCountryDetail, fetchTimeSeries, CountryDetail, TimeSeries } from '../api'
 import ClimateChart from './ClimateChart'
+import ChatBox from './ChatBox'
 
 interface CountryPanelProps {
   countryId: number | null
@@ -123,6 +124,8 @@ export default function CountryPanel({ countryId, onClose, compareIds, onCompare
                 />
               )}
             </div>
+
+            <ChatBox countryId={detail.id} />
           </div>
         )}
       </div>

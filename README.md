@@ -96,7 +96,11 @@ climate-tracker/
 
 | Data | Source |
 |---|---|
-| Temperature change & CO2 emissions | [Our World in Data — CO2 and Greenhouse Gas Emissions dataset](https://github.com/owid/co2-data) |
+| Temperature change, CO₂ emissions, CO₂ per capita, methane | [Our World in Data — CO2 and GHG Emissions dataset](https://github.com/owid/co2-data) |
+| Forest area (% of land area) | [World Bank Development Indicators — AG.LND.FRST.ZS](https://data.worldbank.org/indicator/AG.LND.FRST.ZS) (via FAO) |
+| Global ocean SST anomaly | [NOAA Climate at a Glance — Global Ocean Surface Temperature](https://www.ncei.noaa.gov/cag/global/time-series) |
+| Global mean sea level rise | [NOAA Laboratory for Satellite Altimetry — TOPEX/Jason altimetry](https://www.star.nesdis.noaa.gov/socd/lsa/SeaLevelRise/) |
+| Disaster count, deaths, economic damage | [EM-DAT — The International Disaster Database](https://www.emdat.be/) (requires free registration; save export to `.data/emdat.csv`) |
 | Country boundaries (globe polygons) | [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas) |
 | Country ISO codes (ISO 3166-1) | [i18n-iso-countries](https://github.com/michaelwittig/node-i18n-iso-countries) |
 

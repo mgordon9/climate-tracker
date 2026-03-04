@@ -13,6 +13,11 @@ const COLORS = ['#60a5fa', '#f87171', '#34d399', '#fbbf24', '#a78bfa', '#fb7185'
 const METRICS = [
   { key: 'temperature_change', label: 'Temperature Change' },
   { key: 'co2_emissions', label: 'CO₂ Emissions' },
+  { key: 'co2_per_capita', label: 'CO₂ per Capita' },
+  { key: 'methane', label: 'Methane' },
+  { key: 'forest_area_pct', label: 'Forest Cover' },
+  { key: 'disaster_deaths', label: 'Disaster Deaths' },
+  { key: 'disaster_total_damage_usd', label: 'Disaster Damage' },
 ]
 
 interface ClimateChartProps {

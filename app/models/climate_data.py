@@ -11,7 +11,7 @@ class ClimateData(Base):
     __tablename__ = "climate_data"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    country_id: Mapped[int] = mapped_column(ForeignKey("countries.id"), nullable=False)
+    country_id: Mapped[int | None] = mapped_column(ForeignKey("countries.id"), nullable=True)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     metric_type: Mapped[str] = mapped_column(String(100), nullable=False)
     value: Mapped[float] = mapped_column(nullable=False)

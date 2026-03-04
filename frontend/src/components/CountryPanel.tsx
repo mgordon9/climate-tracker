@@ -1,19 +1,29 @@
 import { useEffect, useState } from 'react'
-import { fetchCountryDetail, CountryDetail } from '../api'
+import { fetchCountryDetail, fetchTimeSeries, CountryDetail, TimeSeries } from '../api'
+import ClimateChart from './ClimateChart'
 
 interface CountryPanelProps {
   countryId: number | null
   onClose: () => void
+  compareIds: number[]
+  onCompareToggle: (id: number) => void
 }
 
-export default function CountryPanel({ countryId, onClose }: CountryPanelProps) {
+export default function CountryPanel({ countryId, onClose, compareIds, onCompareToggle }: CountryPanelProps) {
   const [detail, setDetail] = useState<CountryDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [metric, setMetric] = useState('temperature_change')
+  const [startYear, setStartYear] = useState(1990)
+  const [endYear, setEndYear] = useState(2023)
+  const [chartSeries, setChartSeries] = useState<TimeSeries[]>([])
+  const [chartLoading, setChartLoading] = useState(false)
+
   useEffect(() => {
     if (countryId === null) {
       setDetail(null)
+      setChartSeries([])
       return
     }
     setLoading(true)
@@ -29,7 +39,22 @@ export default function CountryPanel({ countryId, onClose }: CountryPanelProps) 
       })
   }, [countryId])
 
+  useEffect(() => {
+    if (countryId === null) return
+    setChartLoading(true)
+    fetchTimeSeries(countryId, metric, startYear, endYear)
+      .then((ts) => {
+        setChartSeries([ts])
+        setChartLoading(false)
+      })
+      .catch(() => {
+        setChartSeries([])
+        setChartLoading(false)
+      })
+  }, [countryId, metric, startYear, endYear])
+
   const open = countryId !== null
+  const inCompare = countryId !== null && compareIds.includes(countryId)
 
   return (
     <>
@@ -74,6 +99,30 @@ export default function CountryPanel({ countryId, onClose }: CountryPanelProps) 
                 </>
               )}
             </dl>
+
+            <button
+              className={`compare-btn ${inCompare ? 'compare-btn--active' : ''}`}
+              onClick={() => countryId !== null && onCompareToggle(countryId)}
+            >
+              {inCompare ? '✕ Remove from Compare' : '+ Add to Compare'}
+            </button>
+
+            <div className="panel__chart">
+              {chartLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                  <div className="spinner-sm" />
+                </div>
+              ) : (
+                <ClimateChart
+                  series={chartSeries}
+                  metric={metric}
+                  onMetricChange={setMetric}
+                  startYear={startYear}
+                  endYear={endYear}
+                  onYearRangeChange={(s, e) => { setStartYear(s); setEndYear(e) }}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -165,6 +214,30 @@ export default function CountryPanel({ countryId, onClose }: CountryPanelProps) 
         .panel__stats dd {
           font-size: 15px;
           font-weight: 500;
+        }
+        .compare-btn {
+          margin-top: 20px;
+          width: 100%;
+          padding: 8px 16px;
+          border-radius: 8px;
+          border: 1px solid rgba(96,165,250,0.5);
+          background: transparent;
+          color: #60a5fa;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .compare-btn:hover {
+          background: rgba(96,165,250,0.1);
+        }
+        .compare-btn--active {
+          background: rgba(248,113,113,0.15);
+          border-color: rgba(248,113,113,0.5);
+          color: #f87171;
+        }
+        .panel__chart {
+          margin-top: 24px;
         }
 
         @media (max-width: 600px) {

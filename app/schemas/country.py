@@ -32,6 +32,20 @@ class CountryDetail(CountryList):
     climate_data: list[ClimateDataPoint] = []
 
 
+class TimeSeriesPoint(BaseModel):
+    year: int
+    value: float
+
+
+class TimeSeries(BaseModel):
+    country_id: int
+    country_name: str
+    iso_code: str
+    metric: str
+    unit: str
+    data: list[TimeSeriesPoint]
+
+
 class GlobeCountry(BaseModel):
     id: int
     name: str

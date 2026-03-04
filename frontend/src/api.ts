@@ -41,3 +41,46 @@ export async function fetchCountryDetail(id: number): Promise<CountryDetail> {
   if (!res.ok) throw new Error(`Failed to fetch country ${id}: ${res.status}`)
   return res.json()
 }
+
+export interface TimeSeriesPoint {
+  year: number
+  value: number
+}
+
+export interface TimeSeries {
+  country_id: number
+  country_name: string
+  iso_code: string
+  metric: string
+  unit: string
+  data: TimeSeriesPoint[]
+}
+
+export async function fetchTimeSeries(
+  id: number,
+  metric: string,
+  startYear: number,
+  endYear: number,
+): Promise<TimeSeries> {
+  const params = new URLSearchParams({
+    metric,
+    start_year: String(startYear),
+    end_year: String(endYear),
+  })
+  const res = await fetch(`/api/countries/${id}/climate?${params}`)
+  if (!res.ok) throw new Error(`Failed to fetch climate data for country ${id}: ${res.status}`)
+  return res.json()
+}
+
+export async function fetchCompare(
+  ids: number[],
+  metric: string,
+  startYear: number,
+  endYear: number,
+): Promise<TimeSeries[]> {
+  const params = new URLSearchParams({ metric, start_year: String(startYear), end_year: String(endYear) })
+  for (const id of ids) params.append('country_ids', String(id))
+  const res = await fetch(`/api/compare?${params}`)
+  if (!res.ok) throw new Error(`Failed to fetch compare data: ${res.status}`)
+  return res.json()
+}
